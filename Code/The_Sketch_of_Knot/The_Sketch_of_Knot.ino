@@ -24,14 +24,25 @@
 
     Instructions for building the robot can be found on Instructables.
 */
- */
 
-void setup() {
-  // put your setup code here, to run once:
+const int knockSensor = A0;   // The piezo is connected to analog pin 0
+const int threshold = 20;      // Threshold value to decide when the detected sound is a knock or not. 
+                              // Decrease this value to make the robot more sensitive to knocks or 
+                              // increase the value to require harder knocks.
+int sensorReading = 0;        // Variable to store the value read from the sensor pin
 
+void setup() { 
+  Serial.begin(9600);       // Use the serial port
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Read the sensor and store it in the variable sensorReading
+  sensorReading = analogRead(knockSensor);
 
+  // Checks if the sensor reading is higher than the threshold value
+  if (sensorReading >= threshold) {
+    // Send the string "Knock!" via Serial, followed by newline
+    Serial.println("Knock!");
+  }
+  delay(30);  // A little delay to help with debouncing (registering multiple knocks with only one mallet hit)
 }
