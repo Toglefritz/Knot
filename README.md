@@ -1,20 +1,10 @@
-Project: 
+# Project: 
 Knot, a robotic offcut piece of scrap lumber
-
-__/\\\________/\\\___________________________________________        
-__\/\\\_____/\\\//____________________________________________       
-___\/\\\__/\\\//_____________________________________/\\\______      
-____\/\\\\\\//\\\______/\\/\\\\\\_______/\\\\\_____/\\\\\\\\\\\_     
-_____\/\\\//_\//\\\____\/\\\////\\\____/\\\///\\\__\////\\\////__    
-______\/\\\____\//\\\___\/\\\__\//\\\__/\\\__\//\\\____\/\\\______   
-_______\/\\\_____\//\\\__\/\\\___\/\\\_\//\\\__/\\\_____\/\\\_/\\__  
-________\/\\\______\//\\\_\/\\\___\/\\\__\///\\\\\/______\//\\\\\___ 
-_________\///________\///__\///____\///_____\/////_________\/////____
       
-Author: 
+# Author: 
 Toglefritz
 
-Description: 
+# Description: 
 Knot represents what is arguably the final evolutionary form of a spare
 bit of 2x4 lumber. By hollowing out the wood, it can be filled by a RedBoard Artemis,
 the board for which this sketch was written, two stepper motor controllers, and two
