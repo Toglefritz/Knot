@@ -26,23 +26,42 @@
 */
 
 const int knockSensor = A0;   // The piezo is connected to analog pin 0
-const int threshold = 20;      // Threshold value to decide when the detected sound is a knock or not. 
+const int threshold = 20;     // Threshold value to decide when the detected sound is a knock or not. 
                               // Decrease this value to make the robot more sensitive to knocks or 
                               // increase the value to require harder knocks.
 int sensorReading = 0;        // Variable to store the value read from the sensor pin
+int knockCount = 0;           // A variable to determine how many times the robot was knocked
+int prevKnockTime = 0;        // A variable to track the time of each knock for counting purposes
+int knockWindow = 700;        // The maximum time (in ms) between knocks for them to count as a single command
+int knockDebounce = 30;       // A variable representing the minimum time to wait between knocks, to avoid registering
+                              // multiple knocks with one mallet hit
 
 void setup() { 
-  Serial.begin(9600);       // Use the serial port
+  // Set the pin to which the knock sensor is connected as an INPUT
+  pinMode(knockSensor, INPUT);
+
+  // Start Serial communication
+  Serial.begin(9600);
+  Serial.println("Hello, my name is Knot.");
+  Serial.println("I may look like lumber, but I am actually a robot.");
+  Serial.println();
 }
 
-void loop() {
+void loop() { 
   // Read the sensor and store it in the variable sensorReading
   sensorReading = analogRead(knockSensor);
 
   // Checks if the sensor reading is higher than the threshold value
-  if (sensorReading >= threshold) {
-    // Send the string "Knock!" via Serial, followed by newline
-    Serial.println("Knock!");
+  if (sensorReading >= threshold && millis() - prevKnockTime > knockDebounce) {
+    Serial.println("Knock!"); 
+    prevKnockTime = millis();
+    knockCount++;
   }
-  delay(30);  // A little delay to help with debouncing (registering multiple knocks with only one mallet hit)
+
+  // See if we've waited at least one knockWindow period since the last knock
+  // We also impose
+  if (knockCount > 0 && millis() - prevKnockTime > knockWindow && millis() - prevKnockTime > knockDebounce) {
+    Serial.println(String(knockCount) + " knocks detected");
+    knockCount = 0;
+  }
 }
