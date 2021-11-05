@@ -25,6 +25,13 @@
     Instructions for building the robot can be found on Instructables.
 */
 
+// Include libraries for running the Quiic stepper drivers
+#include <SparkFun_Qwiic_Step.h>
+
+// Knot uses two stepper drivers
+QwiicStep motor1;
+QwiicStep motor2;
+
 const int knockSensor = A0;   // The piezo is connected to analog pin 0
 const int threshold = 20;     // Threshold value to decide when the detected sound is a knock or not. 
                               // Decrease this value to make the robot more sensitive to knocks or 
@@ -35,6 +42,7 @@ int prevKnockTime = 0;        // A variable to track the time of each knock for 
 int knockWindow = 700;        // The maximum time (in ms) between knocks for them to count as a single command
 int knockDebounce = 30;       // A variable representing the minimum time to wait between knocks, to avoid registering
                               // multiple knocks with one mallet hit
+int motorStepsPerRev = 200;   // The number of steps for one full revolution of the motors
 
 void setup() { 
   // Set the pin to which the knock sensor is connected as an INPUT
@@ -45,6 +53,18 @@ void setup() {
   Serial.println("Hello, my name is Knot.");
   Serial.println("I may look like lumber, but I am actually a robot.");
   Serial.println();
+
+   Wire.begin();
+   
+   // Check if the stepper drivers are correctly connected to I2C
+   if (motor1.begin() == false) {
+    Serial.println("Device did not acknowledge! Freezing.");
+    while (1);
+  }
+  if (motor2.begin() == false) {
+    Serial.println("Device did not acknowledge! Freezing.");
+    while (1);
+  }
 }
 
 void loop() { 
@@ -59,9 +79,12 @@ void loop() {
   }
 
   // See if we've waited at least one knockWindow period since the last knock
-  // We also impose
+  // We also impose a mininmum time window for debouncing
   if (knockCount > 0 && millis() - prevKnockTime > knockWindow && millis() - prevKnockTime > knockDebounce) {
     Serial.println(String(knockCount) + " knocks detected");
     knockCount = 0;
+
+    // Alright! Let's move the robot.
+    // TODO go hide in a secure location with at least several months of provisions and then write the code to make the robot move
   }
 }
