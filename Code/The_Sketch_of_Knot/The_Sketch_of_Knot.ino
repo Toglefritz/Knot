@@ -25,6 +25,17 @@
     Instructions for building the robot can be found on Instructables.
 */
 
+/*
+
+CONTROLS: 
+
+  -  A single knock moves the robot forward.
+  -  Two knocks turns the robot right.
+  -  Three knocks turns the robot left.
+  -  Four knocks moves the robot backward.
+
+*/
+
 // Include libraries for running the Quiic stepper drivers
 #include <SparkFun_Qwiic_Step.h>
 
@@ -33,14 +44,14 @@ QwiicStep motor1;
 QwiicStep motor2;
 
 const int knockSensor = A0;   // The piezo is connected to analog pin 0
-const int threshold = 20;     // Threshold value to decide when the detected sound is a knock or not. 
+const int threshold = 100;     // Threshold value to decide when the detected sound is a knock or not. 
                               // Decrease this value to make the robot more sensitive to knocks or 
                               // increase the value to require harder knocks.
 int sensorReading = 0;        // Variable to store the value read from the sensor pin
 int knockCount = 0;           // A variable to determine how many times the robot was knocked
-int prevKnockTime = 0;        // A variable to track the time of each knock for counting purposes
+unsigned long prevKnockTime = 0;        // A variable to track the time of each knock for counting purposes
 int knockWindow = 700;        // The maximum time (in ms) between knocks for them to count as a single command
-int knockDebounce = 30;       // A variable representing the minimum time to wait between knocks, to avoid registering
+int knockDebounce = 50;       // A variable representing the minimum time to wait between knocks, to avoid registering
                               // multiple knocks with one mallet hit
 int motorStepsPerRev = 200;   // The number of steps for one full revolution of the motors
 
@@ -61,30 +72,67 @@ void setup() {
     Serial.println("Device did not acknowledge! Freezing.");
     while (1);
   }
-  if (motor2.begin() == false) {
-    Serial.println("Device did not acknowledge! Freezing.");
-    while (1);
+  if (motor2.begin(8) == false) {
+   Serial.println("Device did not acknowledge! Freezing.");
+   while (1);
   }
+
+  // Set the motor drivers to run full steps
+  motor1.setStepSize(STEPSIZE_FULL);
+  motor2.setStepSize(STEPSIZE_FULL);
 }
 
-void loop() { 
+void loop() {  
   // Read the sensor and store it in the variable sensorReading
   sensorReading = analogRead(knockSensor);
 
   // Checks if the sensor reading is higher than the threshold value
   if (sensorReading >= threshold && millis() - prevKnockTime > knockDebounce) {
-    Serial.println("Knock!"); 
+    Serial.println("Knock! (" + String(sensorReading) + ")"); 
     prevKnockTime = millis();
+    Serial.println(prevKnockTime);
     knockCount++;
   }
-
   // See if we've waited at least one knockWindow period since the last knock
   // We also impose a mininmum time window for debouncing
   if (knockCount > 0 && millis() - prevKnockTime > knockWindow && millis() - prevKnockTime > knockDebounce) {
     Serial.println(String(knockCount) + " knocks detected");
-    knockCount = 0;
 
     // Alright! Let's move the robot.
-    // TODO go hide in a secure location with at least several months of provisions and then write the code to make the robot move
+    switch (knockCount) {
+      // One knock means move forward
+      // Move both motors at once in the same direction
+      case 1:  
+        Serial.println("Moving forward!");
+        motor1.move(motorStepsPerRev);
+        motor2.move(motorStepsPerRev);
+      break;
+      // Two knocks means turn right
+      case 2:
+        motor1.move(-motorStepsPerRev);
+        motor2.move(motorStepsPerRev);
+      break;
+      // Three knocks means turn left
+      case 3:
+        motor1.move(motorStepsPerRev);
+        motor2.move(-motorStepsPerRev);
+      break;
+      // Four knocks means move backwards
+      case 4:  
+        Serial.println("Moving forward!");
+        motor1.move(-motorStepsPerRev);
+        motor2.move(-motorStepsPerRev);
+      break;
+      // By default, we will not do anything
+      default:
+      break;
+    }
+
+    // Rest the  knockCount
+     knockCount = 0;
+
+     // Turn off the motors until they are needed again (otherwise they get way too hot)
+     motor1.stop();
+     motor2.stop();
   }
 }
