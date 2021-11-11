@@ -32,7 +32,6 @@ CONTROLS:
   -  A single knock moves the robot forward.
   -  Two knocks turns the robot right.
   -  Three knocks turns the robot left.
-  -  Four knocks moves the robot backward.
 
 */
 
@@ -80,6 +79,18 @@ void setup() {
   // Set the motor drivers to run full steps
   motor1.setStepSize(STEPSIZE_FULL);
   motor2.setStepSize(STEPSIZE_FULL);
+
+  // Set the motor speed
+  motor1.setSpeed(80.0);
+  motor2.setSpeed(80.0);
+
+  // Set the motors' acceleration
+  motor1.setAcceleration(200);
+  motor2.setAcceleration(200);
+
+  // Disable the motors until we are ready for them to move
+  motor1.disable();
+  motor2.disable();
 }
 
 void loop() {  
@@ -87,7 +98,7 @@ void loop() {
   sensorReading = analogRead(knockSensor);
 
   // Checks if the sensor reading is higher than the threshold value
-  if (sensorReading >= threshold && millis() - prevKnockTime > knockDebounce) {
+  if (sensorReading >= threshold && millis() - prevKnockTime > knockDebounce && motor1.isRunning() == false && motor2.isRunning() == false) {
     Serial.println("Knock! (" + String(sensorReading) + ")"); 
     prevKnockTime = millis();
     Serial.println(prevKnockTime);
@@ -98,29 +109,29 @@ void loop() {
   if (knockCount > 0 && millis() - prevKnockTime > knockWindow && millis() - prevKnockTime > knockDebounce) {
     Serial.println(String(knockCount) + " knocks detected");
 
+    // Turn on the motors
+    motor1.enable();
+    motor2.enable();
+
     // Alright! Let's move the robot.
     switch (knockCount) {
       // One knock means move forward
       // Move both motors at once in the same direction
       case 1:  
         Serial.println("Moving forward!");
-        motor1.move(motorStepsPerRev);
-        motor2.move(motorStepsPerRev);
+        motor1.move(-motorStepsPerRev);
+        motor2.move(-motorStepsPerRev);
       break;
       // Two knocks means turn right
       case 2:
+        Serial.println("Turning right!");
         motor1.move(-motorStepsPerRev);
         motor2.move(motorStepsPerRev);
       break;
       // Three knocks means turn left
       case 3:
+        Serial.println("Turning left!");
         motor1.move(motorStepsPerRev);
-        motor2.move(-motorStepsPerRev);
-      break;
-      // Four knocks means move backwards
-      case 4:  
-        Serial.println("Moving forward!");
-        motor1.move(-motorStepsPerRev);
         motor2.move(-motorStepsPerRev);
       break;
       // By default, we will not do anything
@@ -130,9 +141,5 @@ void loop() {
 
     // Rest the  knockCount
      knockCount = 0;
-
-     // Turn off the motors until they are needed again (otherwise they get way too hot)
-     motor1.stop();
-     motor2.stop();
   }
 }
