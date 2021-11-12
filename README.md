@@ -1,7 +1,7 @@
 # Project: 
 Knot is a robotic offcut piece of scrap lumber.
 
-<img src="./images/knot_the_robot_lumber.jpg" width="500" />
+<img src="https://github.com/Toglefritz/Knot/blob/main/Images/knot_the_robot_lumber.jpg" width="500" />
       
 # Author: 
 [Toglefritz](https://github.com/Toglefritz/Knot)
